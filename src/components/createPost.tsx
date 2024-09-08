@@ -1,30 +1,46 @@
+
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function CreatePost() {
+interface CreatePostProps {
+  token: string | null; // Assuming token is passed as a prop
+}
+
+export default function CreatePost({ token }: CreatePostProps) {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
+    setError(null); // Reset error state
+
     try {
+      if (!token) {
+        throw new Error("User not authenticated");
+      }
+
       const response = await fetch("/api/posts", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`, 
         },
         body: JSON.stringify({ title, description }),
       });
-      if (!response.ok) { 
+
+      if (!response.ok) {
         throw new Error("Network response was not ok");
       }
+
       router.push("/");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating post:", error);
+      setError("Failed to create post. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -62,6 +78,7 @@ export default function CreatePost() {
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
           />
         </div>
+        {error && <p className="text-red-500 mb-4">{error}</p>}
         <button
           type="submit"
           disabled={loading}

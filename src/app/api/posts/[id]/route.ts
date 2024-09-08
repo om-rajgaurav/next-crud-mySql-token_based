@@ -1,6 +1,7 @@
-import { NextResponse } from 'next/server';
-import { getPostById, updatePost, deletePost } from '@/lib/dbMethods';
-import { Post } from '@/types/post';
+import { NextRequest, NextResponse } from "next/server";
+import { getPostById, updatePost, deletePost } from "@/lib/postMethodsdb";
+import { Post } from "@/types/post";
+import { getUserIdFromRequest } from "@/lib/session";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -14,7 +15,6 @@ export async function GET(request: Request) {
 
 export async function PUT(request: Request) {
   const updatedPost: Post = await request.json();
-  console.log('updatedPost',updatedPost)
   const result = await updatePost(updatedPost);
   if (result) {
     return NextResponse.json(result);
@@ -30,4 +30,3 @@ export async function DELETE(request: Request) {
   }
   return NextResponse.json({ message: 'Delete failed' }, { status: 400 });
 }
-
